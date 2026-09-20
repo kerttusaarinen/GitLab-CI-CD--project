@@ -59,24 +59,44 @@ app.get("/isBlocked", (req, res) => {
 });
 
 app.post("/blocklist", (req, res) => {
+  console.log(req.body);
 
-  console.log(req.body); 
   const [ip, path] = req.body.split(",");
   const timestamp = new Date();
 
-  console.log("IP:", ip);
-  console.log("PATH:", path);
-  console.log("TIMESTAMP:", timestamp);
-
-  const query = `
-    INSERT INTO blocklist (ip_address, path, timestamp)
-    VALUES ('${ip}', '${path}', '${timestamp.toISOString()}')
+  const countQuery = `
+    SELECT COUNT(*)
+    FROM blocklist
+    WHERE ip_address = '${ip}'
   `;
 
-  pool.query(query)
+  pool.query(countQuery)
+    .then((result) => {
+      const count = parseInt(result.rows[0].count);
+
+      if (count < 2) {
+        console.log("INSERTING:", ip, path);
+        const insertQuery = `
+          INSERT INTO blocklist (ip_address, path, timestamp)
+          VALUES ('${ip}', '${path}', '${timestamp.toISOString()}')
+        `;
+
+        return pool.query(insertQuery);
+      }else {
+        console.log("Already blocked, not inserting");
+      }
+    })
     .then(() => {
-      console.log("Data inserted successfully!");
-      res.send("false");
+      return pool.query(countQuery);
+    })
+    .then((result) => {
+      const count = parseInt(result.rows[0].count);
+
+      if (count >= 2) {
+        res.send("true");
+      } else {
+        res.send("false");
+      }
     })
     .catch((err) => {
       console.error(err);
