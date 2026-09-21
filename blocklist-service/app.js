@@ -6,7 +6,7 @@ const PORT = 3001;
 
 
 const pool = new Pool({
-  host: "localhost",
+  host: "postgres",
   user: "postgres",
   password: "postgres",
   database: "blocklist",
@@ -18,16 +18,31 @@ app.use(express.text());
 
 app.get("/blocklist", (req, res) => {
 
-  const query = `SELECT ip_address FROM blocklist GROUP BY ip_address HAVING count (*) >= 2`;
+  const query = `
+  SELECT ip_address, path, timestamp
+  FROM blocklist
+  WHERE ip_address IN (
+    SELECT ip_address
+    FROM blocklist
+    GROUP BY ip_address
+    HAVING COUNT(*) >= 2
+  )
+  ORDER BY ip_address ASC
+`;
 
   pool.query(query)
-    .then((result) => {
-        console.log(result.rows);
+  .then((result) => {
+    const output = result.rows
+        .map(row =>`${row.ip_address},${row.path},${row.timestamp.toISOString().split(".")[0]}Z`)
+        .join("\n");
 
-        res.send(result.rows);
-    })
+    res.type("text/plain");
+    res.send(output);
+
+  })
     .catch((err) => {
         console.error(err);
+        res.type("text/plain");
         res.status(500).send("Error");
     });
 
@@ -44,13 +59,16 @@ app.get("/isBlocked", (req, res) => {
     .then((result) => {
         const count = parseInt(result.rows[0].count);
         if (count >= 2){
+            res.type("text/plain");
             res.send("true");
         }else{
+            res.type("text/plain");
             res.send("false");
         }
     })
     .catch((err) =>{
         console.error(err);
+        res.type("text/plain");
         res.status(500).send("Error");
     });
 
@@ -93,13 +111,16 @@ app.post("/blocklist", (req, res) => {
       const count = parseInt(result.rows[0].count);
 
       if (count >= 2) {
+        res.type("text/plain");
         res.send("true");
       } else {
+        res.type("text/plain");
         res.send("false");
       }
     })
     .catch((err) => {
       console.error(err);
+      res.type("text/plain");
       res.status(500).send("Error");
     });
 });
@@ -107,10 +128,12 @@ app.post("/blocklist", (req, res) => {
 app.get("/clear", (req, res) => {
   pool.query("TRUNCATE TABLE blocklist")
     .then(() => {
+      res.type("text/plain");
       res.send("cleared");
     })
     .catch((err) => {
       console.error(err);
+      res.type("text/plain");
       res.status(500).send("Error");
     });
 });

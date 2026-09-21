@@ -1,9 +1,45 @@
 services:
+
+  api-service:
+    build: ./api-service
+    ports:
+      - "8199:8199"
+    depends_on:
+      - log-service
+      - blocklist-service
+    networks:
+      - network1
+
+  log-service:
+    build: ./log-service
+    volumes:
+      - log-data:/app
+    networks:
+      - network1
+
+  blocklist-service:
+    build: ./blocklist-service
+    depends_on:
+      - postgres
+    networks:
+      - network1
+      - network2
+
   postgres:
     image: postgres:16
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: blocklist
-    ports:
-      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - network2
+
+networks:
+  network1:
+  network2:
+
+volumes:
+  postgres-data:
+  log-data:
