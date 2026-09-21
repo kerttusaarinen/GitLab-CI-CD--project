@@ -30,6 +30,14 @@ app.get("/log", (req, res) => {
   }
 });
 
+app.get("/clear",(req, res) => {
+
+  counter = 0;
+  fs.writeFileSync("log.txt", "");
+  res.send("cleared");
+
+});
+
 app.listen(PORT, () => {
   console.log(`Log Service running on port ${PORT}`);
 });

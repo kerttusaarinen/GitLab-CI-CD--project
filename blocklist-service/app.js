@@ -104,6 +104,17 @@ app.post("/blocklist", (req, res) => {
     });
 });
 
+app.get("/clear", (req, res) => {
+  pool.query("TRUNCATE TABLE blocklist")
+    .then(() => {
+      res.send("cleared");
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("Error");
+    });
+});
+
 pool.query("SELECT NOW()")
   .then((result) => {
     console.log("Database connected!");
