@@ -1,4 +1,4 @@
-How well did you knew Docker, docker-compose, databases and REST APIs beforehand?\n
+How well did you knew Docker, docker-compose, databases and REST APIs beforehand?
     I have studied a bit of Docker and dicker-compose before, but this project was the first real thing I did with it. REST APIs were familiar to me before from other courses.
 
 What new did you learn?
