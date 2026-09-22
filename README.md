@@ -1,4 +1,4 @@
-How well did you knew Docker, docker-compose, databases and REST APIs beforehand?
+How well did you knew Docker, docker-compose, databases and REST APIs beforehand?\n
     I have studied a bit of Docker and dicker-compose before, but this project was the first real thing I did with it. REST APIs were familiar to me before from other courses.
 
 What new did you learn?
@@ -15,3 +15,6 @@ How many hours did you use for the task?
 
 What would you do differently if you had to redo (re-design) the exercise?
     I would pay more attention to the instruction so that I wouldn't need to fix output forms afterwards. I used a lot of time fixing these little nonfuntional issues because I didn't pay attention to the output form before I got the code to work corrrectly. 
+
+
+    Links to screenshots: 
