@@ -17,4 +17,4 @@ What would you do differently if you had to redo (re-design) the exercise?
     I would pay more attention to the instruction so that I wouldn't need to fix output forms afterwards. I used a lot of time fixing these little nonfuntional issues because I didn't pay attention to the output form before I got the code to work corrrectly. 
 
 
-    Links to screenshots: 
+    Links to screenshots: https://tuni-my.sharepoint.com/:i:/g/personal/kerttu_saarinen_tuni_fi/IQBqkVp7q7wLQ73O2N7VvC4IAcf8B4LxLzaod7-trVtQhsQ?e=0tVOKD 
