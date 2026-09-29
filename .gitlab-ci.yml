@@ -44,6 +44,7 @@ package:
   script:
     - cd log-service
     - podman build -t log-service .
+    - podman images
     - podman save -o image.tar log-service
     - ls -lh image.tar
 
