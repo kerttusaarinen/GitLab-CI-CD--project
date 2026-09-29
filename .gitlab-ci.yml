@@ -16,4 +16,8 @@ build:
   script:
     - cd log-service
     - npm ci
+  
+  artifacts:
+    paths:
+      - log-service/node_modules/
 
