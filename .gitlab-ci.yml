@@ -28,3 +28,11 @@ test:
   script:
     - cd log-service
     - npm test
+  
+  artifacts:
+    paths:
+      - log-service/reports
+
+    reports:
+      junit:
+        - log-service/reports/junit.xml
