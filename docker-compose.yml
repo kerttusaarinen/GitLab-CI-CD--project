@@ -1,0 +1,9 @@
+services:
+  log-service:
+    build:
+      context: ./log-service
+    container_name: log-service
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000

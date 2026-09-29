@@ -1,0 +1,11 @@
+stages:
+  - build
+  - test
+  - package
+  - smoketest
+  - scan
+  - deliver
+
+default:
+  tags:
+    - SE140-2026
