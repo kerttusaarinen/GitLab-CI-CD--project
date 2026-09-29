@@ -17,12 +17,3 @@ build:
     - cd log-service
     - npm ci
 
-test:
-
-package:
-
-smoketest:
-
-scan:
-
-deliver:
