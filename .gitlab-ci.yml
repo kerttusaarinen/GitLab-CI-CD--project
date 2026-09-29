@@ -45,7 +45,7 @@ package:
     - cd log-service
     - podman build -t log-service .
     - podman save -o image.tar log-service
-    - ls -lh image
+    - ls -lh image.tar
 
   artifacts:
     paths:
