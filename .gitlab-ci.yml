@@ -36,3 +36,16 @@ test:
     reports:
       junit:
         - log-service/reports/junit.xml
+
+package:
+  stage: package
+  image: quay.io/podman/stable
+
+  script:
+    - cd log-service
+    - podman build -t log-service .
+    - podman save -o image.tar log-service
+
+  artifacts:
+    paths:
+      - log-service/image.tar
