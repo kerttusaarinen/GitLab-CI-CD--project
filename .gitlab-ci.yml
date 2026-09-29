@@ -9,3 +9,20 @@ stages:
 default:
   tags:
     - SE140-2026
+
+build:
+  stage: build
+  image: node:22
+  script:
+    - cd log-service
+    - npm ci
+
+test:
+
+package:
+
+smoketest:
+
+scan:
+
+deliver:
