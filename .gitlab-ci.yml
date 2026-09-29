@@ -21,3 +21,10 @@ build:
     paths:
       - log-service/node_modules/
 
+test:
+  stage: test
+  image: node:22
+
+  script:
+    - cd log-service
+    - npm test

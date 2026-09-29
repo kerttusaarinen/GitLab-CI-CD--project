@@ -39,6 +39,10 @@ app.get("/clear",(req, res) => {
 
 });
 
-app.listen(PORT, () => {
-  console.log(`Log Service running on port ${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Log Service running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
