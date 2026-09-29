@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="5" failures="0" errors="0" time="0.284">
+  <testsuite name="undefined" errors="0" failures="0" skipped="0" timestamp="2026-09-29T12:30:33" time="0.193" tests="5">
+    <testcase classname=" GET / returns a successful response" name=" GET / returns a successful response" time="0.032">
+    </testcase>
+    <testcase classname=" GET /log is not empty after creating a log entry" name=" GET /log is not empty after creating a log entry" time="0.003">
+    </testcase>
+    <testcase classname=" GET /log returns string" name=" GET /log returns string" time="0.003">
+    </testcase>
+    <testcase classname=" GET /clear returns cleared" name=" GET /clear returns cleared" time="0.002">
+    </testcase>
+    <testcase classname=" GET /clear log is empty after clearing" name=" GET /clear log is empty after clearing" time="0.002">
+    </testcase>
+  </testsuite>
+</testsuites>
