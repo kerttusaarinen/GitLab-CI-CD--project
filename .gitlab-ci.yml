@@ -43,6 +43,7 @@ package:
 
   script:
     - cd log-service
+    - npm prune --omit=dev
     - podman build -t log-service .
     - podman save -o image.tar log-service
   
