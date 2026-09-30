@@ -63,7 +63,9 @@ smoketest:
 
 scan:
   stage: scan
-  image: aquasec/trivy
+  image:
+    name: aquasec/trivy
+    entrypoint: [""]
 
   script:
-    - trivy image --input log-service/image.tar --severity HIGH,CRITICAL
+    - trivy image --input log-service/image.tar --severity HIGH,CRITICAL --exit-code 1
