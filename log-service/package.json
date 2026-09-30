@@ -8,14 +8,13 @@
   },
   "jest": {
     "reporters": [
-    "default",
-    "jest-junit"
-]
-},
+      "default",
+      "jest-junit"
+    ]
+  },
   "jest-junit": {
     "outputDirectory": "./reports",
     "outputName": "junit.xml"
- 
   },
   "keywords": [],
   "author": "",
