@@ -5,8 +5,6 @@ RUN apk update && apk upgrade
 WORKDIR /app
 
 COPY package.json .
-COPY package-lock.json .
-
 
 RUN npm ci --omit=dev
 RUN npm ls --omit=dev
