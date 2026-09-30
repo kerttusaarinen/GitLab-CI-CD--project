@@ -68,3 +68,14 @@ scan:
 
   script:
     - trivy image --input log-service/image.tar --severity HIGH,CRITICAL --exit-code 1
+
+
+deliver:
+  stage: deliver
+  image: quay.io/podman/stable
+
+  script:
+    - podman load -i log-service/image.tar
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - podman tag localhost/log-service:latest $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - podman push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
