@@ -7,8 +7,9 @@ WORKDIR /app
 COPY package.json .
 COPY package-lock.json .
 
-RUN npm install -g npm@latest
+
 RUN npm ci --omit=dev
+RUN npm ls --omit=dev
 
 COPY app.js .
 COPY log.txt .
