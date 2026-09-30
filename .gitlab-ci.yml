@@ -61,4 +61,9 @@ smoketest:
     - sleep 5
     - curl --fail http://localhost:3000/clear
 
-  
+scan:
+  stage: scan
+  image: aquasec/trivy
+
+  script:
+    - trivy image --input log-service/image.tar --severity HIGH,CRITICAL
