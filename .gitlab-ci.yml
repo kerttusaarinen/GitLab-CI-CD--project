@@ -44,10 +44,21 @@ package:
   script:
     - cd log-service
     - podman build -t log-service .
-    - podman images
     - podman save -o image.tar log-service
-    - ls -lh image.tar
+  
 
   artifacts:
     paths:
       - log-service/image.tar
+
+smoketest:
+  stage: smoketest
+  image: quay.io/podman/stable
+
+  script:
+    - podman load -i log-service/image.tar
+    - podman run -d -p 3000:3000 localhost/log-service:latest
+    - sleep 5
+    - curl --fail http://localhost:3000/clear
+
+  
