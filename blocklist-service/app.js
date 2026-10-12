@@ -1,0 +1,169 @@
+const express = require("express");
+const { Pool } = require("pg");
+
+const app = express();
+const PORT = 3001;
+
+
+const pool = new Pool({
+  host: "postgres",
+  user: "postgres",
+  password: "postgres",
+  database: "blocklist",
+  port: 5432,
+});
+
+app.use(express.text());
+
+
+app.get("/blocklist", (req, res) => {
+
+  const query = `
+  SELECT ip_address, path, timestamp
+  FROM blocklist
+  WHERE ip_address IN (
+    SELECT ip_address
+    FROM blocklist
+    GROUP BY ip_address
+    HAVING COUNT(*) >= 2
+  )
+  ORDER BY ip_address ASC
+`;
+
+  pool.query(query)
+  .then((result) => {
+    const output = result.rows
+        .map(row =>`${row.ip_address},${row.path},${row.timestamp.toISOString().split(".")[0]}Z`)
+        .join("\n");
+
+    res.type("text/plain");
+    res.send(output);
+
+  })
+    .catch((err) => {
+        console.error(err);
+        res.type("text/plain");
+        res.status(500).send("Error");
+    });
+
+});
+
+app.get("/isBlocked", (req, res) => {
+  const ip = req.query.ip;
+  
+  const query = `SELECT COUNT(*) FROM blocklist WHERE ip_address = '${ip}'`;
+  console.log("IP:", ip);
+  console.log(query);
+
+  pool.query(query)
+    .then((result) => {
+        const count = parseInt(result.rows[0].count);
+        if (count >= 2){
+            res.type("text/plain");
+            res.send("true");
+        }else{
+            res.type("text/plain");
+            res.send("false");
+        }
+    })
+    .catch((err) =>{
+        console.error(err);
+        res.type("text/plain");
+        res.status(500).send("Error");
+    });
+
+    
+    
+});
+
+app.post("/blocklist", (req, res) => {
+  console.log(req.body);
+
+  const [ip, path] = req.body.split(",");
+  const timestamp = new Date();
+
+  const countQuery = `
+    SELECT COUNT(*)
+    FROM blocklist
+    WHERE ip_address = '${ip}'
+  `;
+
+  pool.query(countQuery)
+    .then((result) => {
+      const count = parseInt(result.rows[0].count);
+
+      if (count < 2) {
+        console.log("INSERTING:", ip, path);
+        const insertQuery = `
+          INSERT INTO blocklist (ip_address, path, timestamp)
+          VALUES ('${ip}', '${path}', '${timestamp.toISOString()}')
+        `;
+
+        return pool.query(insertQuery);
+      }else {
+        console.log("Already blocked, not inserting");
+      }
+    })
+    .then(() => {
+      return pool.query(countQuery);
+    })
+    .then((result) => {
+      const count = parseInt(result.rows[0].count);
+
+      if (count >= 2) {
+        res.type("text/plain");
+        res.send("true");
+      } else {
+        res.type("text/plain");
+        res.send("false");
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.type("text/plain");
+      res.status(500).send("Error");
+    });
+});
+
+app.get("/clear", (req, res) => {
+  pool.query("TRUNCATE TABLE blocklist")
+    .then(() => {
+      res.type("text/plain");
+      res.send("cleared");
+    })
+    .catch((err) => {
+      console.error(err);
+      res.type("text/plain");
+      res.status(500).send("Error");
+    });
+});
+
+pool.query("SELECT NOW()")
+  .then((result) => {
+    console.log("Database connected!");
+    console.log(result.rows[0]);
+  })
+  .catch((err) => {
+    console.error("Database connection failed:");
+    console.error(err);
+  });
+
+pool.query(`
+  CREATE TABLE IF NOT EXISTS blocklist (
+    id SERIAL PRIMARY KEY,
+    ip_address TEXT NOT NULL,
+    path TEXT NOT NULL,
+    timestamp TIMESTAMP NOT NULL
+  )
+`)
+  .then(() => {
+    console.log("Blocklist table ready!");
+  })
+  .catch((err) => {
+    console.error("Table creation failed:");
+    console.error(err);
+  });
+
+app.listen(PORT, () => {
+  console.log(`Blocklist Service running on port ${PORT}`);
+});

@@ -1,9 +1,51 @@
 services:
-  log-service:
-    build:
-      context: ./log-service
-    container_name: log-service
+
+  api-service:
+    build: ./api-service
     ports:
-      - "3000:3000"
+      - "8199:8199"
+    depends_on:
+      - log-service
+      - blocklist-service
+    networks:
+      - network1
+
+  log-service:
+    build: ./log-service
+    volumes:
+      - log-data:/app
+    networks:
+      - network1
+
+  blocklist-service:
+    build: ./blocklist-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - network1
+      - network2
+
+  postgres:
+    image: postgres:16
     environment:
-      PORT: 3000
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: blocklist
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - network2
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+networks:
+  network1:
+  network2:
+
+volumes:
+  postgres-data:
+  log-data:
