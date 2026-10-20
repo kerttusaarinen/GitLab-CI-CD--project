@@ -49,7 +49,7 @@ build_blocklist:
 deploy:
   stage: deploy
 
-  image: registry.course-gitlab.tuni.fi/comp-se140-2026-2027/ansible-base:latest
+  image: python:3.12
 
   rules:
   - if: '$CI_COMMIT_MESSAGE =~ /\[DEPLOY\]/ && $CI_COMMIT_MESSAGE !~ /\[CLEAN\]/'
@@ -75,7 +75,7 @@ deploy:
 clean:
   stage: clean
 
-  image: registry.course-gitlab.tuni.fi/comp-se140-2026-2027/ansible-base:latest
+  image: python:3.12
 
   rules:
     - if: '$CI_COMMIT_MESSAGE =~ /\[CLEAN\]/'
