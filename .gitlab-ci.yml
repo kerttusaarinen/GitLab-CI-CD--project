@@ -65,12 +65,13 @@ deploy:
 
   script:
     - export ANSIBLE_HOST_KEY_CHECKING=False
-    - ansible-playbook -i ansible/inventory.ini ansible/deploy.yml \
-        -e "registry_url=$CI_REGISTRY" \
-        -e "registry_user=$CI_REGISTRY_USER" \
-        -e "registry_password=$CI_REGISTRY_PASSWORD" \
-        -e "registry_image=$CI_REGISTRY_IMAGE" \
-        -e "image_tag=$CI_COMMIT_SHORT_SHA"
+    - >
+      ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
+      -e "registry_url=$CI_REGISTRY"
+      -e "registry_user=$CI_REGISTRY_USER"
+      -e "registry_password=$CI_REGISTRY_PASSWORD"
+      -e "registry_image=$CI_REGISTRY_IMAGE"
+      -e "image_tag=$CI_COMMIT_SHORT_SHA"
 
 clean:
   stage: clean
