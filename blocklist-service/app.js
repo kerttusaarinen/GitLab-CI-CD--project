@@ -149,21 +149,22 @@ pool.query("SELECT NOW()")
   });
 
 pool.query(`
-  CREATE TABLE IF NOT EXISTS blocklist (
-    id SERIAL PRIMARY KEY,
-    ip_address TEXT NOT NULL,
-    path TEXT NOT NULL,
-    timestamp TIMESTAMP NOT NULL
-  )
+CREATE TABLE IF NOT EXISTS blocklist (
+  id SERIAL PRIMARY KEY,
+  ip_address TEXT NOT NULL,
+  path TEXT NOT NULL,
+  timestamp TIMESTAMP NOT NULL
+)
 `)
-  .then(() => {
-    console.log("Blocklist table ready!");
-  })
-  .catch((err) => {
-    console.error("Table creation failed:");
-    console.error(err);
-  });
+.then(() => {
+  console.log("Blocklist table ready!");
 
-app.listen(PORT, () => {
-  console.log(`Blocklist Service running on port ${PORT}`);
+  app.listen(PORT, () => {
+    console.log(`Blocklist Service running on port ${PORT}`);
+  });
+})
+.catch((err) => {
+  console.error("Table creation failed:");
+  console.error(err);
+  process.exit(1);
 });
