@@ -1,81 +1,80 @@
 stages:
-  - build
-  - test
-  - package
-  - smoketest
-  - scan
-  - deliver
+  - build_package
+  - deploy
+  - clean
 
 default:
   tags:
     - SE140-2026
 
-build:
-  stage: build
-  image: node:22
-  script:
-    - cd log-service
-    - npm ci
-  
-  artifacts:
-    paths:
-      - log-service/node_modules/
-
-test:
-  stage: test
-  image: node:22
-
-  script:
-    - cd log-service
-    - npm test
-  
-  artifacts:
-    paths:
-      - log-service/reports
-
-    reports:
-      junit:
-        - log-service/reports/junit.xml
-
-package:
-  stage: package
+build_api:
+  stage: build_package
   image: quay.io/podman/stable
 
   script:
-    - cd log-service
-    - podman build -t log-service .
-    - podman save -o image.tar log-service
-
-  artifacts:
-    paths:
-      - log-service/image.tar
-
-smoketest:
-  stage: smoketest
-  image: quay.io/podman/stable
-
-  script:
-    - podman load -i log-service/image.tar
-    - podman run -d -p 3000:3000 localhost/log-service:latest
-    - sleep 5
-    - curl --fail http://localhost:3000/clear
-
-scan:
-  stage: scan
-  image:
-    name: aquasec/trivy
-    entrypoint: [""]
-
-  script:
-    - trivy image --input log-service/image.tar --severity HIGH,CRITICAL --exit-code 1
-
-
-deliver:
-  stage: deliver
-  image: quay.io/podman/stable
-
-  script:
-    - podman load -i log-service/image.tar
     - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - podman tag localhost/log-service:latest $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
-    - podman push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - podman build -t api-service ./api-service
+    - podman tag api-service $CI_REGISTRY_IMAGE/api-service:$CI_COMMIT_SHORT_SHA
+    - podman push $CI_REGISTRY_IMAGE/api-service:$CI_COMMIT_SHORT_SHA
+
+build_log:
+  stage: build_package
+  image: quay.io/podman/stable
+
+  script:
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - podman build -t log-service ./log-service
+    - podman tag log-service $CI_REGISTRY_IMAGE/log-service:$CI_COMMIT_SHORT_SHA
+    - podman push $CI_REGISTRY_IMAGE/log-service:$CI_COMMIT_SHORT_SHA
+
+build_blocklist:
+  stage: build_package
+  image: quay.io/podman/stable
+
+  script:
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - podman build -t blocklist-service ./blocklist-service
+    - podman tag blocklist-service $CI_REGISTRY_IMAGE/blocklist-service:$CI_COMMIT_SHORT_SHA
+    - podman push $CI_REGISTRY_IMAGE/blocklist-service:$CI_COMMIT_SHORT_SHA
+
+deploy:
+  stage: deploy
+
+  image: python:3.12
+
+  rules:
+    - if: '$CI_COMMIT_MESSAGE =~ /\[DEPLOY\]/'
+
+  before_script:
+    - pip install ansible
+    - pip install docker
+    - mkdir -p ~/.ssh
+    - echo "$DEPLOY_SSH_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+
+  script:
+    - export ANSIBLE_HOST_KEY_CHECKING=False
+    - ansible-playbook -i ansible/inventory.ini ansible/deploy.yml \
+        -e "registry_url=$CI_REGISTRY" \
+        -e "registry_user=$CI_REGISTRY_USER" \
+        -e "registry_password=$CI_REGISTRY_PASSWORD" \
+        -e "registry_image=$CI_REGISTRY_IMAGE" \
+        -e "image_tag=$CI_COMMIT_SHORT_SHA"
+
+clean:
+  stage: clean
+
+  image: python:3.12
+
+  rules:
+    - if: '$CI_COMMIT_MESSAGE =~ /\[CLEAN\]/'
+
+  before_script:
+    - pip install ansible
+    - mkdir -p ~/.ssh
+    - echo "$DEPLOY_SSH_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+
+  script:
+    - export ANSIBLE_HOST_KEY_CHECKING=False
+    - ansible-playbook -i ansible/inventory.ini ansible/cleanup.yml

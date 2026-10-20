@@ -1,0 +1,19 @@
+---
+- name: Clean deployment
+  hosts: vm
+  become: true
+
+  vars:
+    deploy_dir: /home/ubuntu/app
+
+  tasks:
+
+    - name: Stop and remove containers
+      community.docker.docker_compose_v2:
+        project_src: "{{ deploy_dir }}"
+        state: absent
+
+    - name: Remove deployment directory
+      file:
+        path: "{{ deploy_dir }}"
+        state: absent

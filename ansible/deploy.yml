@@ -1,0 +1,36 @@
+---
+- name: Deploy microservices
+  hosts: vm
+  become: true
+
+  vars:
+    deploy_dir: /home/ubuntu/app
+
+  tasks:
+
+    - name: Create deployment directory
+      file:
+        path: "{{ deploy_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Generate docker compose file
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: "{{ deploy_dir }}/docker-compose.yml"
+
+    - name: Login to GitLab Container Registry
+      community.docker.docker_login:
+        registry_url: "{{ registry_url }}"
+        username: "{{ registry_user }}"
+        password: "{{ registry_password }}"
+
+    - name: Pull latest images
+      community.docker.docker_compose_v2:
+        project_src: "{{ deploy_dir }}"
+        pull: always
+
+    - name: Start services
+      community.docker.docker_compose_v2:
+        project_src: "{{ deploy_dir }}"
+        state: present
