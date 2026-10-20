@@ -17,6 +17,9 @@ build_api:
     - podman tag api-service $CI_REGISTRY_IMAGE/api-service:$CI_COMMIT_SHORT_SHA
     - podman push $CI_REGISTRY_IMAGE/api-service:$CI_COMMIT_SHORT_SHA
 
+  rules:
+    - if: '$CI_COMMIT_MESSAGE !~ /\[CLEAN\]/'
+
 build_log:
   stage: build_package
   image: quay.io/podman/stable
@@ -26,6 +29,9 @@ build_log:
     - podman build -t log-service ./log-service
     - podman tag log-service $CI_REGISTRY_IMAGE/log-service:$CI_COMMIT_SHORT_SHA
     - podman push $CI_REGISTRY_IMAGE/log-service:$CI_COMMIT_SHORT_SHA
+
+  rules:
+    - if: '$CI_COMMIT_MESSAGE !~ /\[CLEAN\]/'
 
 build_blocklist:
   stage: build_package
@@ -37,19 +43,24 @@ build_blocklist:
     - podman tag blocklist-service $CI_REGISTRY_IMAGE/blocklist-service:$CI_COMMIT_SHORT_SHA
     - podman push $CI_REGISTRY_IMAGE/blocklist-service:$CI_COMMIT_SHORT_SHA
 
+  rules:
+    - if: '$CI_COMMIT_MESSAGE !~ /\[CLEAN\]/'
+
 deploy:
   stage: deploy
 
-  image: python:3.12
+  image: registry.course-gitlab.tuni.fi/comp-se140-2026-2027/ansible-base:latest
 
   rules:
-    - if: '$CI_COMMIT_MESSAGE =~ /\[DEPLOY\]/'
+  - if: '$CI_COMMIT_MESSAGE =~ /\[DEPLOY\]/ && $CI_COMMIT_MESSAGE !~ /\[CLEAN\]/'
+
 
   before_script:
     - pip install ansible
     - pip install docker
+    - ansible-galaxy collection install community.docker
     - mkdir -p ~/.ssh
-    - echo "$DEPLOY_SSH_KEY" > ~/.ssh/id_rsa
+    - echo "$DEPLOY_SSH_KEY" | base64 -d > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
 
   script:
@@ -64,7 +75,7 @@ deploy:
 clean:
   stage: clean
 
-  image: python:3.12
+  image: registry.course-gitlab.tuni.fi/comp-se140-2026-2027/ansible-base:latest
 
   rules:
     - if: '$CI_COMMIT_MESSAGE =~ /\[CLEAN\]/'
@@ -72,7 +83,7 @@ clean:
   before_script:
     - pip install ansible
     - mkdir -p ~/.ssh
-    - echo "$DEPLOY_SSH_KEY" > ~/.ssh/id_rsa
+    - echo "$DEPLOY_SSH_KEY" | base64 -d > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
 
   script:

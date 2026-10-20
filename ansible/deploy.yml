@@ -34,3 +34,12 @@
       community.docker.docker_compose_v2:
         project_src: "{{ deploy_dir }}"
         state: present
+
+    - name: Wait for API service
+      uri:
+        url: "http://86.50.22.102:8199"
+        status_code: 200
+      register: result
+      retries: 10
+      delay: 5
+      until: result.status == 200
