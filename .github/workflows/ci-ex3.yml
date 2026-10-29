@@ -1,0 +1,34 @@
+name: CI/CD Pipeline (Ex3)
+
+on:
+  push:
+    branches: [ "ex3" ]
+  pull_request:
+    branches: [ "ex3" ]
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        service: [api-service, log-service, blocklist-service]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker image
+        run: |
+          IMAGE_TAG=ghcr.io/${{ github.repository }}/${{ matrix.service }}:${{ github.sha }}
+          cd ${{ matrix.service }}
+          docker build -t ${{ matrix.service }} .
+          docker tag ${{ matrix.service }}:latest $IMAGE_TAG
+          docker push $IMAGE_TAG
