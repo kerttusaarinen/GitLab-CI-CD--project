@@ -22,11 +22,11 @@ jobs:
           cd log-service
           npm ci
 
-      - name: Upload node_modules artifact
+      - name: Upload log-service artifact
         uses: actions/upload-artifact@v4
         with:
-          name: node_modules
-          path: log-service/node_modules/
+          name: log-service-code
+          path: log-service/
 
   test:
     needs: build
@@ -39,11 +39,11 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Download node_modules
+      - name: Download log-service artifact
         uses: actions/download-artifact@v4
         with:
-          name: node_modules
-          path: log-service/node_modules/
+          name: log-service-code
+          path: log-service/
 
       - name: Run tests
         run: |
