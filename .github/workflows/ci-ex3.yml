@@ -27,7 +27,9 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          IMAGE_TAG=ghcr.io/${{ github.repository }}/${{ matrix.service }}:${{ github.sha }}
+          REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_TAG=ghcr.io/$REPO/${{ matrix.service }}:${{ github.sha }}
+          
           cd ${{ matrix.service }}
           docker build -t ${{ matrix.service }} .
           docker tag ${{ matrix.service }}:latest $IMAGE_TAG
