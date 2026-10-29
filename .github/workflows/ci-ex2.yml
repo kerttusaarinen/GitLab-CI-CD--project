@@ -1,0 +1,119 @@
+name: CI Pipeline (Ex2)
+
+on:
+  push:
+    branches: [ "ex2" ]
+  pull_request:
+    branches: [ "ex2" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: |
+          cd log-service
+          npm ci
+
+      - name: Upload node_modules artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: node_modules
+          path: log-service/node_modules/
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Download node_modules
+        uses: actions/download-artifact@v4
+        with:
+          name: node_modules
+          path: log-service/node_modules/
+
+      - name: Run tests
+        run: |
+          cd log-service
+          npm test
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-reports
+          path: log-service/reports/
+
+  package:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          cd log-service
+          docker build -t log-service .
+          docker save -o image.tar log-service
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-image
+          path: log-service/image.tar
+
+  smoketest:
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: container-image
+          path: log-service/
+
+      - name: Run container smoketest
+        run: |
+          docker load -i log-service/image.tar
+          docker run -d -p 3000:3000 log-service:latest
+          sleep 5
+          curl --fail http://localhost:3000/clear
+
+  scan:
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: container-image
+          path: log-service/
+
+      - name: Load image to Docker
+        run: docker load -i log-service/image.tar
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'log-service:latest'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'HIGH,CRITICAL'
