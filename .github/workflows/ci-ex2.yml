@@ -44,6 +44,11 @@ jobs:
         with:
           name: log-service-code
           path: log-service/
+          
+      - name: Install dependencies
+        run: |
+          cd log-service
+          npm ci
 
       - name: Run tests
         run: |
