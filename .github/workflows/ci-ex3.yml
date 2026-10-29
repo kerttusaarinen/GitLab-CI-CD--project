@@ -56,6 +56,12 @@ jobs:
           
 
       - name: Run Ansible Deploy Playbook
+        env:
+          CI_REGISTRY: "ghcr.io"
+          CI_REGISTRY_USER: "${{ github.actor }}"
+          CI_JOB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CI_REGISTRY_IMAGE: "ghcr.io/${{ github.repository }}"
+          CI_COMMIT_SHORT_SHA: "${{ github.sha }}"
         run: |
           export ANSIBLE_HOST_KEY_CHECKING=False
           REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
